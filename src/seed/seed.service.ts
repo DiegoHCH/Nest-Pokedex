@@ -13,13 +13,21 @@ export class SeedService {
   ){}
 
   async executeSeed() {
-    const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=10");
+
+    await this.pokemonModel.deleteMany({});
+
+    const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=650");
     const data: PokeResponse = await response.json();
 
-    data.results.map(async ({name, url}) => {
+    const pokemonToInsert: {name:string, no: number}[] = [];
+
+    data.results.map(({name, url}) => {
       const no = +url.split('/').at(-2);
-      const pokemon = await this.pokemonModel.create({name, no});
+      //const pokemon = await this.pokemonModel.create({name, no});
+      pokemonToInsert.push({name, no});
     })
+
+    await this.pokemonModel.insertMany(pokemonToInsert);
     
     return 'Seed Execute Succesfully';
   }
